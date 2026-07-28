@@ -392,16 +392,19 @@ int photoscrawl_export_original_resource(const char *localIdentifier, const char
     PHAssetResourceRequestOptions *options = [[PHAssetResourceRequestOptions alloc] init];
     options.networkAccessAllowed = allowNetwork ? YES : NO;
 
-    __block NSError *writeError = nil;
+    __block NSString *writeErrorDescription = nil;
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     [[PHAssetResourceManager defaultManager] writeDataForAssetResource:resource toFile:destination options:options completionHandler:^(NSError * _Nullable error) {
-      writeError = error;
+      if (error != nil) {
+        writeErrorDescription = [error.localizedDescription copy];
+      }
       dispatch_semaphore_signal(semaphore);
     }];
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 
-    if (writeError != nil) {
-      pcSetError(errorOut, [NSString stringWithFormat:@"export original resource: %@", writeError.localizedDescription]);
+    if (writeErrorDescription != nil) {
+      pcSetError(errorOut, [NSString stringWithFormat:@"export original resource: %@", writeErrorDescription]);
+      [writeErrorDescription release];
       return 0;
     }
     return 1;
