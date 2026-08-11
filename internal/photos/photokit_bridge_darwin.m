@@ -306,10 +306,9 @@ char *photoscrawl_photokit_snapshot(const char *libraryPath, char **errorOut) {
     if (@available(macOS 10.15, *)) {
       options.includeAllBurstAssets = YES;
     }
-    options.sortDescriptors = @[
-      [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES],
-      [NSSortDescriptor sortDescriptorWithKey:@"localIdentifier" ascending:YES]
-    ];
+    // PhotoKit only accepts a provider-specific subset of sort keys, and that
+    // subset can change between macOS releases. Crawl identity and upserts are
+    // stable by local identifier, so provider enumeration order is irrelevant.
 
     PHFetchResult<PHAsset *> *fetch = [PHAsset fetchAssetsWithOptions:options];
     NSMutableArray *assets = [NSMutableArray arrayWithCapacity:fetch.count];
